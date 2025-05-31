@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1748707397089,
+    "nome": "teste",
+    "email": "gab.sds@hotmail.com",
+    "senha": "1111"
+  },
+  {
+    "nomeEstabelecimento": "teste um",
+    "endereco": "rua anhangua 53 bela vista",
+    "email": "gab.sds3@hotmail.com",
+    "senha": "1111"
+  }
+]
