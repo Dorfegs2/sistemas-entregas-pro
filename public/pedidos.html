@@ -144,19 +144,23 @@
   const temRetorno = document.getElementById('temRetorno').checked;
 
   const resposta = await fetch('https://sistemas-entregas-prd.onrender.com/api/solicitacoes', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-      usuario_id,
-      nomeEstabelecimento,
-      enderecoA,
-      numPedido,
-      nomedocliente,
-      enderecoB,
-      observacao,
-      temRetorno
-    })
-  });
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    usuario_id: '123', // coloque o ID real do usuário
+    nomeEstabelecimento: 'Seu Restaurante',
+    enderecoA: 'Rua A',
+    numPedido: '456',
+    nomedocliente: 'Maria',
+    enderecoB: 'Rua B',
+    observacao: 'Sem cebola',
+    temRetorno: false,
+    taxa: 8.00
+  })
+})
+
   const mensagem = 
       `Pedido de Entrega:\n` +
       `Estabelecimento: ${nomeEstabelecimento}\n` +
