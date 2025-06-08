@@ -172,14 +172,7 @@ function abrirWhatsApp() {
     return;
   }
 
-  // Variáveis da rota
-  const distanciaKm = (rotaInfoGlobal.distancia / 1000).toFixed(2);
-  const duracaoMin = Math.round(rotaInfoGlobal.duracao / 60);
-  const valorEntrega = rotaInfoGlobal.valorEntrega.toFixed(2);
-  const temRetorno = rotaInfoGlobal.temRetorno;
-  const retornoTexto = temRetorno ? 'Retorno: SIM' : 'Retorno: NÃO';
-
-  // Função para reinserir número no endereço formatado
+  // Funções auxiliares
   function reinserirNumeroEndereco(original, formatado) {
     const match = original.match(/(\d{1,5})/);
     if (!match) return formatado;
@@ -193,7 +186,6 @@ function abrirWhatsApp() {
     return formatado.includes(numero) ? formatado : formatado + ', ' + numero;
   }
 
-  // Função para resumir o endereço pegando 4 partes
   function resumirEndereco(enderecoCompleto) {
     const partes = enderecoCompleto.split(',');
     return partes.slice(0, 4).map(p => p.trim()).join(', ');
@@ -203,12 +195,38 @@ function abrirWhatsApp() {
   const enderecoAComNumero = reinserirNumeroEndereco(enderecoAOriginal, rotaInfoGlobal.enderecoFormatadoA);
   const enderecoBComNumero = reinserirNumeroEndereco(enderecoBOriginal, rotaInfoGlobal.enderecoFormatadoB);
 
-  // Resumir endereço para 4 partes
+  // Resumir endereços
   const enderecoAResumido = resumirEndereco(enderecoAComNumero);
   const enderecoBResumido = resumirEndereco(enderecoBComNumero);
 
-  // Monta a mensagem WhatsApp
-  const msg = `*Pedido de Entrega*\n
+  const distanciaKm = (rotaInfoGlobal.distancia / 1000).toFixed(2);
+  const duracaoMin = Math.round(rotaInfoGlobal.duracao / 60);
+  const valorEntrega = rotaInfoGlobal.valorEntrega.toFixed(2);
+  const temRetorno = rotaInfoGlobal.temRetorno;
+  const retornoTexto = temRetorno ? 'Retorno: SIM' : 'Retorno: NÃO';
+
+  const pedido = {
+    nome,
+    numeroPedido: numPedido,
+    coleta: enderecoAResumido,
+    entrega: enderecoBResumido,
+    distanciaKm,
+    duracaoMin,
+    retorno: temRetorno,
+    valor: valorEntrega,
+    timestamp: new Date().toISOString()
+  };
+
+  // Envia o pedido para o backend
+  fetch('/api/pedidos', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(pedido)
+  })
+    .then(res => {
+      if (!res.ok) throw new Error('Erro ao salvar pedido');
+      // Depois de salvar, abre o WhatsApp
+      const msg = `*Pedido de Entrega*\n
 Nome: ${nome}
 Pedido Nº: ${numPedido}
 Coleta: ${enderecoAResumido}
@@ -218,11 +236,15 @@ Duração: ${duracaoMin} minutos
 ${retornoTexto}
 Valor da entrega: R$ ${valorEntrega}`;
 
-  const numeroWhatsApp = '48988131927';
-  const url = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(msg)}`;
-
-  window.open(url, '_blank');
+      const numeroWhatsApp = '48988131927';
+      const url = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(msg)}`;
+      window.open(url, '_blank');
+    })
+    .catch(err => {
+      alert('Erro ao enviar o pedido: ' + err.message);
+    });
 }
+
 
 
 document.getElementById('btnCalcular').addEventListener('click', calcularRota);
