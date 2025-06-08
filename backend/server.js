@@ -2,17 +2,18 @@ const express = require('express');
 const fs = require('fs');
 const cors = require('cors');
 const path = require('path');
-const cron = require('node-cron');
 
 const app = express();
-const PORT = 3000;
-const corsOptions = {
-  origin: 'https://sistemas-entregas-pro.vercel.app', // <== CORRETO!
-  methods: ['GET', 'POST'],
-  allowedHeaders: ['Content-Type']
-};
+const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+// Configuração do CORS para aceitar só o domínio correto
+const corsOptions = {
+  origin: 'https://sistemas-entregas-pro.vercel.app',  // ajuste para o seu domínio frontend
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type'],
+};
+app.use(cors(corsOptions));
+
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -27,41 +28,16 @@ app.post('/api/registrar', (req, res) => {
       usuarios = JSON.parse(data);
     }
 
-    // Verifica se já existe email cadastrado
     if (usuarios.find(u => u.email === email)) {
       return res.status(400).json({ erro: 'Email já cadastrado' });
     }
-    app.put('/api/solicitacoes/:id/status', (req, res) => {
-  const { id } = req.params;
-  const { status } = req.body;
 
-  if (!status) return res.status(400).json({ erro: 'Status é obrigatório' });
-
-  fs.readFile('solicitacoes.json', 'utf8', (err, data) => {
-    if (err) return res.status(500).json({ erro: 'Erro ao ler solicitações' });
-
-    let solicitacoes = JSON.parse(data);
-    const index = solicitacoes.findIndex(s => s.id === parseInt(id));
-
-    if (index === -1) return res.status(404).json({ erro: 'Solicitação não encontrada' });
-
-    solicitacoes[index].status = status;
-
-    fs.writeFile('solicitacoes.json', JSON.stringify(solicitacoes, null, 2), err => {
-      if (err) return res.status(500).json({ erro: 'Erro ao salvar alteração' });
-      res.json(solicitacoes[index]);
-    });
-  });
-});
-
-
-    // Cria novo usuário com id único simples (timestamp)
     const novoUsuario = {
       id: Date.now().toString(),
       nomeEstabelecimento,
       endereco,
       email,
-      senha
+      senha,
     };
 
     usuarios.push(novoUsuario);
@@ -91,13 +67,12 @@ app.post('/api/login', (req, res) => {
     const usuario = usuarios.find(u => u.email === email && u.senha === senha);
     if (!usuario) return res.status(401).json({ erro: 'Email ou senha incorretos' });
 
-    // Retorna dados básicos (não retorna senha)
     res.json({
       id: usuario.id,
       email: usuario.email,
       nome: usuario.nomeEstabelecimento,
       nomeEstabelecimento: usuario.nomeEstabelecimento,
-      endereco: usuario.endereco
+      endereco: usuario.endereco,
     });
   });
 });
@@ -108,7 +83,6 @@ app.get('/api/solicitacoes/:usuario_id', (req, res) => {
 
   fs.readFile('solicitacoes.json', 'utf8', (err, data) => {
     if (err) {
-      // Se arquivo não existir, responde array vazio
       if (err.code === 'ENOENT') return res.json([]);
       return res.status(500).json({ erro: 'Erro ao ler solicitações' });
     }
@@ -120,7 +94,6 @@ app.get('/api/solicitacoes/:usuario_id', (req, res) => {
       return res.status(500).json({ erro: 'Erro ao processar dados de solicitações' });
     }
 
-    // Filtra só solicitações do usuário
     const solicitacoesUsuario = solicitacoes.filter(s => s.usuario_id === usuario_id);
 
     res.json(solicitacoesUsuario);
@@ -140,7 +113,7 @@ app.post('/api/solicitacoes', (req, res) => {
     temRetorno,
     status = 'aberto',
     data_criacao = new Date().toISOString(),
-    taxa = 0
+    taxa = 0,
   } = req.body;
 
   if (!usuario_id) return res.status(400).json({ erro: 'Usuário inválido' });
@@ -167,7 +140,7 @@ app.post('/api/solicitacoes', (req, res) => {
       temRetorno,
       status,
       data_criacao,
-      taxa: parseFloat(taxa) || 0
+      taxa: parseFloat(taxa) || 0,
     };
 
     solicitacoes.push(novaSolicitacao);
@@ -178,7 +151,6 @@ app.post('/api/solicitacoes', (req, res) => {
     });
   });
 });
-
 
 app.listen(PORT, () => {
   console.log(`Servidor rodando em http://localhost:${PORT}`);
