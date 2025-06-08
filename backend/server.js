@@ -1,7 +1,14 @@
 const express = require('express');
 const fs = require('fs');
-const cors = require('cors');
 const path = require('path');
+const cors = require('cors');
+
+app.use(cors({
+  origin: '*', // ou especifique seu frontend: ex: 'https://seu-site.com'
+  methods: ['GET','POST','OPTIONS'],
+  allowedHeaders: ['Content-Type'],
+}));
+
 
 const app = express();
 const PORT = process.env.PORT || 3000;
