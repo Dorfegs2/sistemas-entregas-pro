@@ -168,7 +168,7 @@
   <div class="main-container">
     <div class="top-bar">
       <h2><i class="bi bi-person-lines-fill"></i> Painel do Usuário</h2>
-      <a href="index.html" class="btn btn-custom">
+      <a href="pedidos.html" class="btn btn-custom">
         <i class="bi bi-plus-circle"></i> Nova Solicitação
       </a>
     </div>
@@ -222,33 +222,52 @@
 
 
     async function carregarSolicitacoes() {
-      const resp = await fetch(`http://localhost:3000/api/solicitacoes/${usuario_id}`);
-      const dados = await resp.json();
+  const resp = await fetch(`http://localhost:3000/api/solicitacoes/${usuario_id}`);
+  const dados = await resp.json();
 
-      const total = dados.length;
-      const aberto = dados.filter(s => s.status === 'aberto');
-      const fechado = dados.filter(s => s.status === 'fechado');
+  const total = dados.length;
+  const aberto = dados.filter(s => s.status === 'aberto');
+  const fechado = dados.filter(s => s.status === 'fechado');
 
-      document.getElementById('total').textContent = total;
-      document.getElementById('aberto').textContent = aberto.length;
-      document.getElementById('fechado').textContent = fechado.length;
+  document.getElementById('total').textContent = total;
+  document.getElementById('aberto').textContent = aberto.length;
+  document.getElementById('fechado').textContent = fechado.length;
 
-      const lista = document.getElementById('lista');
-      lista.innerHTML = '';
-      dados.slice(-5).reverse().forEach(s => {
-        lista.innerHTML += `<tr><td>#${s.id}</td><td>${s.status}</td><td>${new Date(s.data_criacao).toLocaleString()}</td></tr>`;
-      });
+  // Soma o total acumulado das taxas de todas as solicitações
+  const somaTaxas = dados.reduce((acc, s) => acc + (parseFloat(s.taxa) || 0), 0);
 
-      const proxima = aberto[0];
-      const bloco = document.getElementById('proximaEntrega');
-      if (proxima) {
-        bloco.innerHTML = `
-          <strong>Pedido:</strong> #${proxima.id}<br>
-          <strong>Status:</strong> ${proxima.status}<br>
-          <strong>Data:</strong> ${new Date(proxima.data_criacao).toLocaleString()}
-        `;
-      }
-    }
+  // Mostrar o valor acumulado no painel
+  let taxaTotalElemento = document.getElementById('taxaTotal');
+  if (!taxaTotalElemento) {
+    taxaTotalElemento = document.createElement('div');
+    taxaTotalElemento.id = 'taxaTotal';
+    taxaTotalElemento.style.marginTop = '10px';
+    taxaTotalElemento.style.fontWeight = 'bold';
+    document.querySelector('.status-box').appendChild(taxaTotalElemento);
+  }
+  taxaTotalElemento.textContent = `Taxa Total Acumulada: R$ ${somaTaxas.toFixed(2)}`;
+
+  // Mostrar as últimas 5 solicitações
+  const lista = document.getElementById('lista');
+  lista.innerHTML = '';
+  dados.slice(-5).reverse().forEach(s => {
+    lista.innerHTML += `<tr><td>#${s.id}</td><td>${s.status}</td><td>${new Date(s.data_criacao).toLocaleString()}</td></tr>`;
+  });
+
+  // Mostrar próxima entrega em aberto
+  const proxima = aberto[0];
+  const bloco = document.getElementById('proximaEntrega');
+  if (proxima) {
+    bloco.innerHTML = `
+      <strong>Pedido:</strong> #${proxima.id}<br>
+      <strong>Status:</strong> ${proxima.status}<br>
+      <strong>Data:</strong> ${new Date(proxima.data_criacao).toLocaleString()}
+    `;
+  } else {
+    bloco.textContent = 'Nenhuma entrega em andamento no momento.';
+  }
+}
+
 
     carregarSolicitacoes();
   </script>
