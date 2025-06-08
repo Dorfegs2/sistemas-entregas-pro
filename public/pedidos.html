@@ -89,7 +89,7 @@
       </div>
 <div class="input-group">
         <span class="input-group-text"><i class="bi bi-hash"></i></span>
-        <input type="text" id="enderecoretirada" class="form-control" placeholder="Endereço Retirada" required />
+        <input type="text" id="enderecoA" class="form-control" placeholder="Endereço Retirada" required />
       </div>
       <div class="input-group">
         <span class="input-group-text"><i class="bi bi-hash"></i></span>
@@ -132,11 +132,11 @@
 
   
     
-    document.getElementById('formPedido').addEventListener('submit', async function(e) {
-  e.preventDefault();
+    document.getElementById('btnWhatsapp').addEventListener('click', async () => {
+  if (!confirm('Deseja realmente enviar o pedido pelo WhatsApp?')) return;
 
-  const nomeEstabelecimento = document.getElementById('campoEstabelecimento').value.trim();
-  const enderecoA = document.getElementById('campoEndereco').value.trim();
+  const nomeEstabelecimento = document.getElementById('nomeEstabelecimento').value.trim();
+  const enderecoA = document.getElementById('enderecoA').value.trim();
   const numPedido = document.getElementById('numPedido').value.trim();
   const nomedocliente = document.getElementById('nomedocliente').value.trim();
   const enderecoB = document.getElementById('enderecoB').value.trim();
@@ -144,9 +144,9 @@
   const temRetorno = document.getElementById('temRetorno').checked;
 
   const resposta = await fetch('https://sistemas-entregas-prd.onrender.com/api/solicitacoes', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
       usuario_id,
       nomeEstabelecimento,
       enderecoA,
@@ -157,6 +157,18 @@
       temRetorno
     })
   });
+  const mensagem = 
+      `Pedido de Entrega:\n` +
+      `Estabelecimento: ${nomeEstabelecimento}\n` +
+      `Endereço Retirada: ${enderecoA}\n` +
+      `Número do Pedido: ${numPedido}\n` +
+      `Cliente: ${nomedocliente}\n` +
+      `Endereço Entrega: ${enderecoB}\n` +
+      `Observação: ${observacao}\n` +
+      `Entrega com Retorno: ${temRetorno ? 'Sim' : 'Não'}`;
+
+    const urlWhatsapp = 'https://wa.me/?text=' + encodeURIComponent(mensagem);
+    window.open(urlWhatsapp, '_blank');
 
   if (resposta.ok) {
     alert('Solicitação criada com sucesso!');
@@ -164,11 +176,13 @@
   } else {
     alert('Erro ao criar solicitação.');
   }
+  
 });
+
 
     window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('nomeEstabelecimento').value = localStorage.getItem('usuario_estabelecimento') || '';
-  document.getElementById('enderecoretirada').value = localStorage.getItem('usuario_endereco') || '';
+  document.getElementById('enderecoA').value = localStorage.getItem('usuario_endereco') || '';
 });
 
   </script>
