@@ -6,6 +6,11 @@ const cron = require('node-cron');
 
 const app = express();
 const PORT = 3000;
+const corsOptions = {
+  origin: 'https://sistemas-entregas-pro.vercel.app', // <== CORRETO!
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type']
+};
 
 app.use(cors());
 app.use(express.json());
